@@ -1,0 +1,36 @@
+#!/bin/bash
+m3u=$1
+search=$2
+
+echo -en "\nLoading channels... "
+OUTPUT=$(curl -s $m3u | grep EXTINF: -A 1 | grep -i "$search" -A 1)
+echo -e "Done!\n"
+
+channels=()
+while read line && read line2; do
+  name=$(echo "$line" | sed -n 's/.*tvg-name="\([^"]*\)".*/\1/p')
+  url=$line2
+
+  if [[ -n "$name" ]]; then
+    channels+=("$name url:$url")
+  fi
+done <<< "$OUTPUT"
+
+for index in "${!channels[@]}"; do
+  id=$((index + 1))
+  name=$(echo "${channels[$index]}" | sed 's/\(.*\) url:.*/\1/')
+
+  echo "($id) $name"
+done
+
+echo ""
+
+read -p "Select a channel: " selected
+index=$((selected - 1))
+
+name=$(echo "${channels[$index]}" | sed 's/\(.*\) url:.*/\1/')
+url=$(echo "${channels[$index]}" | grep -oP 'url:\K.*' | tr -d '\r')
+
+mpv "$URL" > /dev/null 2>&1 &
+
+echo "Playing $url from $name"
