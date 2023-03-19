@@ -12,10 +12,14 @@ player_pid_file="/tmp/iptvplayerpid"
 
 mkdir -p "$config_path"
 
-if [ -z "$m3u" ] && [ ! -s "$channels_file" ]; then
-  echo "No M3U playlist has been configured. Run with: iptv http://domain/playlist.m3u"
-  exit 1
-fi
+usage() {
+  cat <<EOF
+usage: iptv [M3U_URL]
+
+    [M3U_URL]    URL to a M3U playlist, required on first run
+    --help       Display help
+EOF
+}
 
 save_channels() {
   m3u_url=$(cat "$m3u_url_file")
@@ -50,6 +54,16 @@ save_channels() {
 
   printf "%s\n" "${channels[@]}" > $channels_file
 }
+
+if [ -z "$m3u" ] && [ ! -s "$channels_file" ]; then
+  usage
+  exit 1
+fi
+
+if [[ $1 == "-h" ]] || [[ $1 == "--help" ]]; then
+  usage
+  exit 0
+fi
 
 if [ ! -z "$m3u" ]; then
   echo "$m3u" > $m3u_url_file
