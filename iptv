@@ -1,36 +1,33 @@
 #!/bin/bash
 m3u=$1
-search=$2
 
-echo -en "\nLoading channels... "
-OUTPUT=$(curl -s $m3u | grep EXTINF: -A 1 | grep -i "$search" -A 1)
-echo -e "Done!\n"
+tmp_playlist="/tmp/iptvtemp"
+tmp_channels="/tmp/iptvchannels"
 
+printf "\nLoading channels... "
+curl -s $m3u | grep EXTINF: -A 1 > $tmp_playlist
+printf "Done!\n"
+
+printf "Parsing channels... "
 channels=()
-while read line && read line2; do
-  name=$(echo "$line" | sed -n 's/.*tvg-name="\([^"]*\)".*/\1/p')
-  url=$line2
+readarray -t lines < "$tmp_playlist"
+for (( i=0; i<${#lines[@]}; i+=2 )); do
+    line="${lines[i]}"
+    line2="${lines[i+1]}"
 
-  if [[ -n "$name" ]]; then
-    channels+=("$name url:$url")
-  fi
-done <<< "$OUTPUT"
-
-for index in "${!channels[@]}"; do
-  id=$((index + 1))
-  name=$(echo "${channels[$index]}" | sed 's/\(.*\) url:.*/\1/')
-
-  echo "($id) $name"
+    if [[ "$line" =~ tvg-name=\"([^\"]+)\" ]]; then
+        name="${BASH_REMATCH[1]}"
+        channels+=("$name [CH:$i] url:$line2")
+    fi
 done
+printf "Done!\n"
 
-echo ""
+printf "%s\n" "${channels[@]}" > $tmp_channels
+selected=$(cat "$tmp_channels" | sed 's/ [^ ]*$//' | fzf)
+selected_channel=$(echo "$selected" | sed 's/.*\(\[CH:[0-9]\+\]\).*/\1/')
+selected_channel_line=$(cat "$tmp_channels" | grep -F "$selected_channel")
+selected_channel_url=$(echo "$selected_channel_line" | grep -oP 'url:\K.*' | tr -d '\r')
+selected_channel_name=$(echo "$selected_channel_line" | sed 's/\(.*\) url:.*/\1/')
 
-read -p "Select a channel: " selected
-index=$((selected - 1))
-
-name=$(echo "${channels[$index]}" | sed 's/\(.*\) url:.*/\1/')
-url=$(echo "${channels[$index]}" | grep -oP 'url:\K.*' | tr -d '\r')
-
-mpv "$URL" > /dev/null 2>&1 &
-
-echo "Playing $url from $name"
+printf "Playing %s from %s" "$selected_channel_url" "$selected_channel_name"
+mpv "$selected_channel_url" > /dev/null 2>&1 &
