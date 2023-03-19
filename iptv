@@ -6,6 +6,7 @@ m3u=$1
 
 config_path="$HOME/.config/iptv/"
 channels_file="$config_path/channels"
+m3u_url_file="$config_path/m3u_url"
 tmp_playlist="/tmp/iptvplaylist"
 player_pid_file="/tmp/iptvplayerpid"
 
@@ -17,8 +18,10 @@ if [ -z "$m3u" ] && [ ! -s "$channels_file" ]; then
 fi
 
 save_channels() {
+  m3u_url=$(cat "$m3u_url_file")
+
   printf "\nLoading channels... "
-  curl -s $m3u | grep EXTINF: -A 2 > $tmp_playlist
+  curl -s "$m3u_url" | grep EXTINF: -A 2 > $tmp_playlist
   printf "Done!\n"
 
   printf "Parsing channels... "
@@ -49,6 +52,7 @@ save_channels() {
 }
 
 if [ ! -z "$m3u" ]; then
+  echo "$m3u" > $m3u_url_file
   save_channels
 
   echo "Playlist saved. Now run iptv again without a M3U URL."
