@@ -59,6 +59,11 @@ if [ ! -z "$m3u" ]; then
   exit
 fi
 
+if [[ $(find "$channels_file" -mtime +1) ]]; then
+  printf "Doing a daily update of channels..\n"
+  save_channels
+fi
+
 selected=$(cat "$channels_file" | sed 's/ [^ ]*$//' | fzf)
 
 if [ ! -n "$selected" ]; then
