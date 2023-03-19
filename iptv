@@ -6,17 +6,26 @@ fi
 
 m3u=$1
 
-tmp_playlist="/tmp/iptvtemp"
-tmp_channels="/tmp/iptvchannels"
+config_path="$HOME/.config/iptv/"
+channels_file="$config_path/channels"
+tmp_playlist="/tmp/iptvplaylist"
 
-printf "\nLoading channels... "
-curl -s $m3u | grep EXTINF: -A 1 > $tmp_playlist
-printf "Done!\n"
+mkdir -p "$config_path"
 
-printf "Parsing channels... "
-channels=()
-readarray -t lines < "$tmp_playlist"
-for (( i=0; i<${#lines[@]}; i+=2 )); do
+if [ -z "$m3u" ] && [ ! -s "$channels_file" ]; then
+  echo "No M3U playlist has been configured. Run with: iptv http://domain/playlist.m3u"
+  exit 1
+fi
+
+if [ ! -z "$m3u" ]; then
+  printf "\nLoading channels... "
+  curl -s $m3u | grep EXTINF: -A 1 > $tmp_playlist
+  printf "Done!\n"
+
+  printf "Parsing channels... "
+  channels=()
+  readarray -t lines < "$tmp_playlist"
+  for (( i=0; i<${#lines[@]}; i+=2 )); do
     line="${lines[i]}"
     line2="${lines[i+1]}"
 
@@ -24,13 +33,23 @@ for (( i=0; i<${#lines[@]}; i+=2 )); do
         name="${BASH_REMATCH[1]}"
         channels+=("$name [CH:$i] url:$line2")
     fi
-done
-printf "Done!\n"
+  done
+  printf "Done!\n"
 
-printf "%s\n" "${channels[@]}" > $tmp_channels
-selected=$(cat "$tmp_channels" | sed 's/ [^ ]*$//' | fzf)
+  printf "%s\n" "${channels[@]}" > $channels_file
+
+  echo "Playlist saved. Now run iptv again without a M3U URL."
+  exit
+fi
+
+selected=$(cat "$channels_file" | sed 's/ [^ ]*$//' | fzf)
+
+if [ ! -n "$selected" ]; then
+  exit 1
+fi
+
 selected_channel=$(echo "$selected" | sed 's/.*\(\[CH:[0-9]\+\]\).*/\1/')
-selected_channel_line=$(cat "$tmp_channels" | grep -F "$selected_channel")
+selected_channel_line=$(cat "$channels_file" | grep -F "$selected_channel")
 selected_channel_url=$(echo "$selected_channel_line" | grep -oP 'url:\K.*' | tr -d '\r')
 selected_channel_name=$(echo "$selected_channel_line" | sed 's/\(.*\) url:.*/\1/')
 
