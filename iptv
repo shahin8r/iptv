@@ -16,7 +16,7 @@ if [ -z "$m3u" ] && [ ! -s "$channels_file" ]; then
   exit 1
 fi
 
-if [ ! -z "$m3u" ]; then
+save_channels() {
   printf "\nLoading channels... "
   curl -s $m3u | grep EXTINF: -A 2 > $tmp_playlist
   printf "Done!\n"
@@ -46,6 +46,10 @@ if [ ! -z "$m3u" ]; then
   printf "Done!\n"
 
   printf "%s\n" "${channels[@]}" > $channels_file
+}
+
+if [ ! -z "$m3u" ]; then
+  save_channels
 
   echo "Playlist saved. Now run iptv again without a M3U URL."
   exit
