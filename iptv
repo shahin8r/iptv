@@ -7,6 +7,7 @@ m3u=$1
 config_path="$HOME/.config/iptv/"
 channels_file="$config_path/channels"
 tmp_playlist="/tmp/iptvplaylist"
+player_pid_file="/tmp/iptvplayerpid"
 
 mkdir -p "$config_path"
 
@@ -28,8 +29,8 @@ if [ ! -z "$m3u" ]; then
     line2="${lines[i+1]}"
 
     if [[ "$line" =~ tvg-name=\"([^\"]+)\" ]]; then
-        name="${BASH_REMATCH[1]}"
-        channels+=("$name [CH:$i] url:$line2")
+      name="${BASH_REMATCH[1]}"
+      channels+=("$name [CH:$i] url:$line2")
     fi
   done
   printf "Done!\n"
@@ -52,4 +53,12 @@ selected_channel_url=$(echo "$selected_channel_line" | grep -oP 'url:\K.*' | tr 
 selected_channel_name=$(echo "$selected_channel_line" | sed 's/\(.*\) url:.*/\1/')
 
 printf "Playing %s from %s" "$selected_channel_url" "$selected_channel_name"
+
+player_pid=$(cat "$player_pid_file")
+
+if kill -0 "$player_pid" >/dev/null 2>&1; then
+  kill "$player_pid"
+fi
+
 mpv "$selected_channel_url" > /dev/null 2>&1 &
+echo $! > "$player_pid_file"
