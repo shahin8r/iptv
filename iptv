@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ ! -x "$(command -v fzf)" ]; then
+  echo "fzf needs to be installed to use iptv."
+  exit 1
+fi
+
 m3u=$1
 
 tmp_playlist="/tmp/iptvtemp"
