@@ -18,19 +18,29 @@ fi
 
 if [ ! -z "$m3u" ]; then
   printf "\nLoading channels... "
-  curl -s $m3u | grep EXTINF: -A 1 > $tmp_playlist
+  curl -s $m3u | grep EXTINF: -A 2 > $tmp_playlist
   printf "Done!\n"
 
   printf "Parsing channels... "
   channels=()
   readarray -t lines < "$tmp_playlist"
-  for (( i=0; i<${#lines[@]}; i+=2 )); do
-    line="${lines[i]}"
+  for (( i=0; i<${#lines[@]}; i+=3 )); do
+    line1="${lines[i]}"
     line2="${lines[i+1]}"
+    line3="${lines[i+2]}"
 
-    if [[ "$line" =~ tvg-name=\"([^\"]+)\" ]]; then
+    if [[ "$line2" == http* ]]; then
+      url="$line2"
+    elif [[ "$line3" == http* ]]; then
+      url="$line3"
+    fi
+
+    if [[ "$line1" =~ tvg-name=\"([^\"]+)\" ]]; then
       name="${BASH_REMATCH[1]}"
-      channels+=("$name [CH:$i] url:$line2")
+      channels+=("$name [CH:$i] url:$url")
+    elif [[ "$line1" =~ tvg-id=\"([^\"]+)\" ]]; then
+      name="${BASH_REMATCH[1]}"
+      channels+=("$name [CH:$i] url:$url")
     fi
   done
   printf "Done!\n"
