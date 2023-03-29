@@ -91,10 +91,12 @@ selected_channel_name=$(echo "$selected_channel_line" | sed 's/\(.*\) url:.*/\1/
 
 printf "Playing %s from %s" "$selected_channel_url" "$selected_channel_name"
 
-player_pid=$(cat "$player_pid_file")
+if [ -f "$player_pid_file" ]; then
+  player_pid=$(cat "$player_pid_file")
 
-if kill -0 "$player_pid" >/dev/null 2>&1; then
-  kill "$player_pid"
+  if kill -0 "$player_pid" >/dev/null 2>&1; then
+    kill "$player_pid"
+  fi
 fi
 
 mpv "$selected_channel_url" > /dev/null 2>&1 &
