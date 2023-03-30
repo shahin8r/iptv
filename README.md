@@ -17,7 +17,7 @@ All dependencies can be installed with your package manager.
 sudo wget https://raw.githubusercontent.com/shahin8r/iptv/master/iptv -qO /usr/local/bin/iptv && sudo chmod +x /usr/local/bin/iptv
 ```
 
-Run `iptv` with your playlist URL to load all the channels.
+Run `iptv` with your playlist URL to load all the channels (only needed on first run).
 ```
 iptv https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8
 ```
