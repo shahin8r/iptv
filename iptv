@@ -30,26 +30,18 @@ save_channels() {
 
   printf "Parsing channels... "
   channels=()
-  readarray -t lines < "$tmp_playlist"
-  for (( i=0; i<${#lines[@]}; i++ )); do
-    line1="${lines[i]}"
-    line2="${lines[i+1]}"
-    line3="${lines[i+2]}"
+  url=""
 
-    if [[ "$line2" == http* ]]; then
-      url="$line2"
-    elif [[ "$line3" == http* ]]; then
-      url="$line3"
-    fi
+  while IFS= read -r line; do
+  if [[ "$line" == http* ]]; then
+    url="$line"
+  elif [[ "$line" =~ tvg-name=\"([^\"]+)\" || "$line" =~ tvg-id=\"([^\"]+)\" ]]; then
+    name="${BASH_REMATCH[1]}"
+    channels+=("$name [CH:${#channels[@]}] url:$url")
+    url=""
+  fi
+  done < "$tmp_playlist"
 
-    if [[ "$line1" =~ tvg-name=\"([^\"]+)\" ]]; then
-      name="${BASH_REMATCH[1]}"
-      channels+=("$name [CH:$i] url:$url")
-    elif [[ "$line1" =~ tvg-id=\"([^\"]+)\" ]]; then
-      name="${BASH_REMATCH[1]}"
-      channels+=("$name [CH:$i] url:$url")
-    fi
-  done
   printf "Done!\n"
 
   printf "%s\n" "${channels[@]}" > $channels_file
