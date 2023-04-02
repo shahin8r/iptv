@@ -31,7 +31,7 @@ save_channels() {
   printf "Parsing channels... "
   channels=()
   readarray -t lines < "$tmp_playlist"
-  for (( i=0; i<${#lines[@]}; i+=3 )); do
+  for (( i=0; i<${#lines[@]}; i++ )); do
     line1="${lines[i]}"
     line2="${lines[i+1]}"
     line3="${lines[i+2]}"
