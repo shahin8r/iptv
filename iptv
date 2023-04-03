@@ -78,7 +78,7 @@ fi
 
 selected_channel=$(echo "$selected" | sed 's/.*\(\[CH:[0-9]\+\]\).*/\1/')
 selected_channel_line=$(cat "$channels_file" | grep -F "$selected_channel")
-selected_channel_url=$(echo "$selected_channel_line" | grep -oP 'url:\K.*' | tr -d '\r')
+selected_channel_url=$(echo "$selected_channel_line" | grep -oE 'url:(.*)' | sed 's/url://' | tr -d '\r')
 selected_channel_name=$(echo "$selected_channel_line" | sed 's/\(.*\) url:.*/\1/')
 
 printf "Playing %s from %s" "$selected_channel_url" "$selected_channel_name"
