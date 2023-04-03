@@ -33,12 +33,12 @@ save_channels() {
   url=""
 
   while IFS= read -r line; do
-  if [[ "$line" == http* ]]; then
-    url="$line"
-  elif [[ "$line" =~ tvg-name=\"([^\"]+)\" || "$line" =~ tvg-id=\"([^\"]+)\" ]]; then
+  if [[ "$line" =~ tvg-name=\"([^\"]+)\" || "$line" =~ tvg-id=\"([^\"]+)\" ]]; then
     name="${BASH_REMATCH[1]}"
-    channels+=("$name [CH:${#channels[@]}] url:$url")
     url=""
+  elif [[ "$line" == http* ]]; then
+    url="$line"
+    channels+=("$name [CH:${#channels[@]}] url:$url")
   fi
   done < "$tmp_playlist"
 
