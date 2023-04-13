@@ -24,8 +24,13 @@ EOF
 save_channels() {
   m3u_url=$(cat "$m3u_url_file")
 
-  printf "\nLoading channels... "
-  curl -s "$m3u_url" | grep EXTINF: -A 2 > $tmp_playlist
+  if [[ "$m3u_url" == *".m3u" ]]; then
+    printf "\nLoading channels from file... "
+    cat "$m3u_url" | grep EXTINF: -A 2 > $tmp_playlist
+  else
+    printf "\nLoading channels from URL... "
+    curl -s "$m3u_url" | grep EXTINF: -A 2 > $tmp_playlist
+  fi
   printf "Done!\n"
 
   printf "Parsing channels... "
@@ -81,7 +86,7 @@ selected_channel_line=$(cat "$channels_file" | grep -F "$selected_channel")
 selected_channel_url=$(echo "$selected_channel_line" | grep -oE 'url:(.*)' | sed 's/url://' | tr -d '\r')
 selected_channel_name=$(echo "$selected_channel_line" | sed 's/\(.*\) url:.*/\1/')
 
-printf "Playing %s from %s" "$selected_channel_url" "$selected_channel_name"
+printf "Playing %s \n" "$selected_channel_name"
 
 if [ -f "$player_pid_file" ]; then
   player_pid=$(cat "$player_pid_file")
