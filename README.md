@@ -22,5 +22,10 @@ Run `iptv` with your playlist URL to load all the channels (only needed on first
 iptv https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8
 ```
 
+For local m3u files run.
+```
+iptv /path/to/file/playlist.m3u
+```
+
 ## Usage
 Run `iptv`.
